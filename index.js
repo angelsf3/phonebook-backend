@@ -73,14 +73,26 @@ app.get('/info', (request, response) => {
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
-    const person = {
-        id: generateId(),
-        name: body.name,
-        number: body.number
+    if (body.name === undefined || body.number === undefined) {
+        return response.status(400).json({
+            error: 'name or number missing'
+        })
     }
+    else if (persons.find(person => person.name.includes(body.name))) {
+        return response.status(400).json({
+            error: 'name must be unique'
+        })
+    }
+    else {
+        const person = {
+            id: generateId(),
+            name: body.name,
+            number: body.number
+        }
 
-    persons = persons.concat(person)
-    response.json(person)
+        persons = persons.concat(person)
+        response.json(person)
+    }
 })
 
 const PORT = 3001

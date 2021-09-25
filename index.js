@@ -4,7 +4,9 @@ const app = express()
 
 app.use(express.json())
 
-app.use(morgan('tiny'))
+app.use(morgan((tokens, request, response) => {
+    return `${request.method} ${request.url} ${response.statusCode} ${JSON.stringify(request.body)}`
+}))
 
 let persons = [
     {

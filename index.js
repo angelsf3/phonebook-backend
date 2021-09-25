@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json())
+
 let persons = [
     {
         "id": 1,
@@ -23,6 +25,19 @@ let persons = [
         "number": "39-23-6423122"
     }
 ]
+
+const generateRandom = (min, max) => {
+    return Math.random() * (max - min) + min
+}
+
+const generateId = () => {
+    const maxId = (persons.length > 0)
+        ? Math.max(...persons.map(person => person.id))
+        : 1
+
+    const randomId = generateRandom(maxId * 100, maxId);
+    return Math.floor(randomId);
+}
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
@@ -53,6 +68,19 @@ app.get('/info', (request, response) => {
         <p>Phonebook has info for ${persons.length} people</p>
         <p>${today}</p>`
     )
+})
+
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+
+    const person = {
+        id: generateId(),
+        name: body.name,
+        number: body.number
+    }
+
+    persons = persons.concat(person)
+    response.json(person)
 })
 
 const PORT = 3001

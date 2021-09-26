@@ -11,6 +11,8 @@ app.use(morgan((tokens, request, response) => {
     return `${request.method} ${request.url} ${response.statusCode} ${JSON.stringify(request.body)}`
 }))
 
+app.use(express.static('build'))
+
 let persons = [
     {
         "id": 1,

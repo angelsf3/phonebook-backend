@@ -17,32 +17,36 @@ app.use(express.static('build'))
 
 let persons = []
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(p => {
-        persons = p
-        response.json(persons)
-    })
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+        .then(p => {
+            persons = p
+            response.json(persons)
+        })
+        .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
 
     Person.findById(id)
         .then(person => {
             response.json(person)
         })
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
 
     Person.findByIdAndRemove(id)
         .then(result => {
             response.status(204).end()
         })
+        .catch(error => next(error))
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
     const today = new Date()
     response.send(`
         <p>Phonebook has info for ${persons.length} people</p>
@@ -50,7 +54,7 @@ app.get('/info', (request, response) => {
     )
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if (body.name === undefined || body.number === undefined) {
@@ -68,12 +72,26 @@ app.post('/api/persons', (request, response) => {
             name: body.name,
             number: body.number
         })
-        person.save().then(savedPerson => {
-            response.json(savedPerson)
-            persons = persons.concat(savedPerson)
-        })
+        person.save()
+            .then(savedPerson => {
+                response.json(savedPerson)
+                persons = persons.concat(savedPerson)
+            })
+            .catch(error => next(error))
     }
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 

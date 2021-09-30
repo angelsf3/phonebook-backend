@@ -48,10 +48,14 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 app.get('/info', (request, response, next) => {
     const today = new Date()
-    response.send(`
-        <p>Phonebook has info for ${persons.length} people</p>
-        <p>${today}</p>`
-    )
+    Person.find({})
+        .then(persons => {
+            response.send(`
+                <p>Phonebook has info for ${persons.length} people</p>
+                <p>${today}</p>`
+            )
+        })
+        .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response, next) => {
